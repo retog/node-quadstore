@@ -6,16 +6,18 @@ const should = require('should');
 const asynctools = require('asynctools');
 const QuadStore = require('..').QuadStore;
 
-module.exports = () => {
+module.exports = (parentBeforeEach, parentAfterEach) => {
 
   describe('QuadStore', () => {
 
     beforeEach(async function () {
+      await parentBeforeEach.call(this);
       this.store = new QuadStore(this.db);
       await asynctools.waitForEvent(this.store, 'ready');
     });
 
     afterEach(async function () {
+      await parentAfterEach.call(this);
       await this.store.close();
     });
 

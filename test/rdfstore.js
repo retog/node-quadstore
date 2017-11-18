@@ -7,16 +7,18 @@ const factory = require('rdf-data-model');
 const RdfStore = require('..').RdfStore;
 const asynctools = require('asynctools');
 
-module.exports = () => {
+module.exports = (parentBeforeEach, parentAfterEach) => {
 
   describe('RdfStore', () => {
 
     beforeEach(async function () {
+      await parentBeforeEach.call(this);
       this.store = new RdfStore(this.db, { dataFactory: factory });
       await asynctools.waitForEvent(this.store, 'ready');
     });
 
     afterEach(async function () {
+      await parentAfterEach.call(this);
       await this.store.close();
     });
 

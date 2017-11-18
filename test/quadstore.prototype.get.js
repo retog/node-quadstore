@@ -95,4 +95,96 @@ module.exports = () => {
 
   });
 
+  describe('QuadStore.prototype.get() using ranges on the subject term', () => {
+
+    beforeEach(async function () {
+
+      this.quads = [
+        { subject: 's0', predicate: 'p0', object: 'o0', graph: 'c0' },
+        { subject: 's1', predicate: 'p1', object: 'o0', graph: 'c1' },
+        { subject: 's2', predicate: 'p1', object: 'o0', graph: 'c1' },
+        { subject: 's3', predicate: 'p2', object: 'o1', graph: 'c2' },
+        { subject: 's4', predicate: 'p2', object: 'o1', graph: 'c3' },
+        { subject: 's5', predicate: 'p3', object: 'o1', graph: 'c3' },
+        { subject: 's7', predicate: 'p3', object: 'o2', graph: 'c3' },
+      ];
+
+      await this.store.put(this.quads);
+    });
+
+    it('should filter quads by subject', async function () {
+      const quads = await this.store.get({
+        subject: [
+          { test: 'gte', comparate: 's0' },
+          { test: 'lte', comparate: 's3' }
+        ]
+      });
+      should(quads).deepEqual(this.quads.slice(0, 4));
+    });
+
+    it('should filter quads by subject and match by predicate', async function () {
+      const quads = await this.store.get({
+        subject: [
+          { test: 'gte', comparate: 's0' },
+          { test: 'lte', comparate: 's4' }
+        ],
+        predicate: 'p1'
+      });
+      should(quads).deepEqual(this.quads.slice(1, 3));
+    });
+
+    it('should filter quads by subject and match by object', async function () {
+      const quads = await this.store.get({
+        subject: [
+          { test: 'gte', comparate: 's3' },
+          { test: 'lte', comparate: 's7' }
+        ],
+        object: 'o1'
+      });
+      should(quads).deepEqual(this.quads.slice(3, 6));
+    });
+
+  });
+
+  describe('QuadStore.prototype.get() using ranges on the object term', () => {
+
+    beforeEach(async function () {
+
+      this.quads = [
+        { subject: 's0', predicate: 'p0', object: 'o0', graph: 'c0' },
+        { subject: 's0', predicate: 'p1', object: 'o1', graph: 'c1' },
+        { subject: 's0', predicate: 'p1', object: 'o2', graph: 'c1' },
+        { subject: 's1', predicate: 'p2', object: 'o3', graph: 'c2' },
+        { subject: 's1', predicate: 'p2', object: 'o4', graph: 'c3' },
+        { subject: 's1', predicate: 'p3', object: 'o5', graph: 'c3' },
+        { subject: 's2', predicate: 'p3', object: 'o6', graph: 'c3' },
+      ];
+
+      await this.store.put(this.quads);
+    });
+
+    it('should filter quads by object', async function () {
+      const quads = await this.store.get({
+        object: [
+          { test: 'gte', comparate: 'o0' },
+          { test: 'lte', comparate: 'o3' }
+        ]
+      });
+      should(quads).deepEqual(this.quads.slice(0, 4));
+    });
+
+    it('should filter quads by object and match by predicate and graph', async function () {
+      const quads = await this.store.get({
+        predicate: 'p2',
+        object: [
+          { test: 'gte', comparate: 'o0' },
+          { test: 'lte', comparate: 'o5' }
+        ],
+        graph: 'c2'
+      });
+      should(quads).deepEqual(this.quads.slice(3, 4));
+    });
+
+  });
+
 };

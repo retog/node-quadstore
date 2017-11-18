@@ -182,4 +182,34 @@ module.exports = () => {
 
   });
 
+  describe('RdfStore.prototype.match() using ranges on the object term', () => {
+
+    it('should match quads by subject', async function () {
+      const store = this.store;
+      const rs = store;
+      const factory = store.dataFactory;
+      const quads = [
+        factory.quad(factory.namedNode('http://ex.com/s'), factory.namedNode('http://ex.com/p'), factory.literal('0', 'http://www.w3.org/2001/XMLSchema#integer'), factory.namedNode('http://ex.com/g')),
+        factory.quad(factory.namedNode('http://ex.com/s'), factory.namedNode('http://ex.com/p'), factory.literal('1', 'http://www.w3.org/2001/XMLSchema#integer'), factory.namedNode('http://ex.com/g')),
+        factory.quad(factory.namedNode('http://ex.com/s'), factory.namedNode('http://ex.com/p'), factory.literal('2', 'http://www.w3.org/2001/XMLSchema#integer'), factory.namedNode('http://ex.com/g')),
+        factory.quad(factory.namedNode('http://ex.com/s'), factory.namedNode('http://ex.com/p'), factory.literal('3', 'http://www.w3.org/2001/XMLSchema#integer'), factory.namedNode('http://ex.com/g')),
+        factory.quad(factory.namedNode('http://ex.com/s'), factory.namedNode('http://ex.com/p'), factory.literal('4', 'http://www.w3.org/2001/XMLSchema#integer'), factory.namedNode('http://ex.com/g')),
+        factory.quad(factory.namedNode('http://ex.com/s'), factory.namedNode('http://ex.com/p'), factory.literal('5', 'http://www.w3.org/2001/XMLSchema#integer'), factory.namedNode('http://ex.com/g')),
+        factory.quad(factory.namedNode('http://ex.com/s'), factory.namedNode('http://ex.com/p'), factory.literal('6', 'http://www.w3.org/2001/XMLSchema#integer'), factory.namedNode('http://ex.com/g')),
+      ];
+      const source = utils.createArrayStream(quads);
+      await asynctools.waitForEvent(store.import(source), 'end', true);
+      const matchedQuads = await asynctools.streamToArray(store.match(null, null, [
+        { test: 'lte', comparate: factory.literal('6', 'http://www.w3.org/2001/XMLSchema#integer') }
+      ]));
+      // const matchedQuads = await asynctools.streamToArray(store.match());
+      // stripTermSerializedValue(matchedQuads);
+      // should(matchedQuads).have.length(1);
+      // should(matchedQuads[0]).deepEqual(quads[1]);
+      console.log('LENGTH', matchedQuads.length);
+      console.log(matchedQuads.map(q => q.subject.value + ' ' + q.predicate.value + ' ' + q.object.value + ' ' + q.graph.value).join('\n'));
+    });
+
+  });
+
 };

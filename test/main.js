@@ -17,28 +17,30 @@ const remove = Promise.promisify(fs.remove, { context: fs });
 
 describe('MemDOWN backend', () => {
 
-  beforeEach(async function () {
+  async function beforeEach() {
     this.location = shortid();
     this.db = levelup(this.location, { valueEncoding: QuadStore.valueEncoding, db: memdown });
-  });
+  }
 
-  quadStoreSuite();
-  rdfStoreSuite();
+  async function afterEach() {}
+
+  quadStoreSuite(beforeEach, afterEach);
+  rdfStoreSuite(beforeEach, afterEach);
 
 });
 
 describe('LevelDOWN backend', () => {
 
-  beforeEach(async function () {
+  async function beforeEach() {
     this.location = path.join(os.tmpdir(), 'node-quadstore-' + shortid.generate());
     this.db = levelup(this.location, { valueEncoding: QuadStore.valueEncoding, db: leveldown });
-  });
+  }
 
-  afterEach(async function () {
+  async function afterEach() {
     await remove(this.location);
-  });
+  }
 
-  quadStoreSuite();
-  rdfStoreSuite();
+  quadStoreSuite(beforeEach, afterEach);
+  rdfStoreSuite(beforeEach, afterEach);
 
 });
