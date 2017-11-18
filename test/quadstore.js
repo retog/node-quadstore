@@ -17,8 +17,8 @@ module.exports = (parentBeforeEach, parentAfterEach) => {
     });
 
     afterEach(async function () {
-      await parentAfterEach.call(this);
       await this.store.close();
+      await parentAfterEach.call(this);
     });
 
     require('./quadstore.prototype.get')();
