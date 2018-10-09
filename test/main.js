@@ -13,7 +13,7 @@ const quadStoreSuite = require('./quadstore');
 
 const remove = util.promisify(fs.remove);
 
-describe('MemDOWN backend', () => {
+describe.only('MemDOWN backend', () => {
 
   beforeEach(async function () {
     this.db = memdown();
@@ -24,7 +24,7 @@ describe('MemDOWN backend', () => {
 
 });
 
-describe('LevelDOWN backend', () => {
+describe.skip('LevelDOWN backend', () => {
 
   beforeEach(async function () {
     this.location = path.join(os.tmpdir(), 'node-quadstore-' + nanoid());

@@ -6,7 +6,7 @@ const should = require('should');
 
 module.exports = () => {
 
-  describe('QuadStore.prototype.registerIndex()', () => {
+  describe.skip('QuadStore.prototype.registerIndex()', () => {
 
     it('Should register a new index correctly.', async function () {
       const store = this.store;
