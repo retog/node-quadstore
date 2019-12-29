@@ -1,6 +1,5 @@
 /* eslint global-require: "off" */
 
-
 'use strict';
 
 const utils = require('../lib/utils');
