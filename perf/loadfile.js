@@ -5,9 +5,9 @@ const n3 = require('n3');
 const fs = require('fs-extra');
 const os = require('os');
 const path = require('path');
+const util = require('util');
 const utils = require('../lib/utils');
-const Promise = require('bluebird');
-const shortid = require('shortid');
+const nanoid = require('nanoid');
 const RdfStore = require('..').RdfStore;
 const leveldown = require('leveldown');
 const dataFactory = require('n3').DataFactory;
@@ -22,7 +22,7 @@ function du(absPath) {
   });
 }
 
-const remove = Promise.promisify(fs.remove, { context: 'fs' });
+const remove = util.promisify(fs.remove.bind(fs));
 
 (async () => {
 
@@ -36,7 +36,8 @@ const remove = Promise.promisify(fs.remove, { context: 'fs' });
     return;
   }
 
-  const absStorePath = path.join(os.tmpdir(), `node-quadstore-${shortid.generate()}`);
+  const absStorePath = path.join(os.tmpdir(), `node-quadstore-${nanoid()}`);
+  console.log(absStorePath);
 
   const store = new RdfStore(leveldown(absStorePath), { dataFactory });
 
@@ -45,7 +46,7 @@ const remove = Promise.promisify(fs.remove, { context: 'fs' });
   const absFilePath = path.resolve(process.cwd(), filePath);
 
   const fileReader = fs.createReadStream(absFilePath);
-  const streamParser = n3.StreamParser({ format });
+  const streamParser = new n3.StreamParser({ format });
 
   const beforeTime = Date.now();
   await store.putStream(fileReader.pipe(streamParser));
@@ -58,6 +59,6 @@ const remove = Promise.promisify(fs.remove, { context: 'fs' });
   console.log(`TIME: ${(afterTime - beforeTime) / 1000} s`);
   console.log(`DISK: ${diskUsage}`);
 
-  await remove(absStorePath);
+  // await remove(absStorePath);
 
 })();
