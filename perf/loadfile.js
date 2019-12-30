@@ -32,7 +32,7 @@ const remove = util.promisify(fs.remove.bind(fs));
   const format = args[1] || 'text/turtle';
 
   if (!filePath) {
-    console.log('\n\n  USAGE: node scripts/perf/loadfile.js <filePath>\n\n');
+    console.log('\n\n  USAGE: node loadfile.js <filePath> [mimeType]\n\n');
     return;
   }
 

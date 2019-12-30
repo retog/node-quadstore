@@ -10,7 +10,7 @@ module.exports = () => {
   describe('RdfStore', () => {
 
     beforeEach(async function () {
-      this.store = new RdfStore(this.db);
+      this.store = new RdfStore(this.db, { indexes: this.indexes });
       await utils.waitForEvent(this.store, 'ready');
     });
 

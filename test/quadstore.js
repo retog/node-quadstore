@@ -10,7 +10,7 @@ module.exports = () => {
   describe('QuadStore', () => {
 
     beforeEach(async function () {
-      this.store = new QuadStore(this.db);
+      this.store = new QuadStore(this.db, { indexes: this.indexes });
       await utils.waitForEvent(this.store, 'ready');
     });
 
@@ -24,4 +24,5 @@ module.exports = () => {
     require('./quadstore.prototype.patch')();
 
   });
+
 };
