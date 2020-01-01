@@ -44,6 +44,7 @@
     "@rdfjs/data-model": "^1.1.2",
     "asynciterator": "^2.0.1",
     "debug": "^4.1.1",
+    "decimal.js": "^10.2.0",
     "encoding-down": "^6.1.0",
     "levelup": "^4.1.0",
     "lodash.defaults": "^4.2.0",

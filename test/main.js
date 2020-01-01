@@ -8,10 +8,13 @@ const path = require('path');
 const nanoid = require('nanoid');
 const memdown = require('memdown');
 const leveldown = require('leveldown');
+const rdfSuite = require('./rdf');
 const rdfStoreSuite = require('./rdfstore');
 const quadStoreSuite = require('./quadstore');
 
 const remove = util.promisify(fs.remove);
+
+rdfSuite();
 
 describe('MemDOWN backend, standard indexes', () => {
 
