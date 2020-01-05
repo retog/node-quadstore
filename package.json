@@ -15,8 +15,6 @@
   ],
   "main": "index.js",
   "scripts": {
-    "precommit": "npm test",
-    "prepush": "npm test",
     "test": "nyc mocha"
   },
   "files": [
@@ -69,5 +67,11 @@
   },
   "license": "MIT",
   "homepage": "https://github.com/beautifulinteractions/node-quadstore",
-  "bugs": "https://github.com/beautifulinteractions/node-quadstore/issues"
+  "bugs": "https://github.com/beautifulinteractions/node-quadstore/issues",
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm test",
+      "pre-push": "npm test"
+    }
+  }
 }
