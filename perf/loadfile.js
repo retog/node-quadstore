@@ -7,7 +7,6 @@ const os = require('os');
 const path = require('path');
 const util = require('util');
 const utils = require('../lib/utils');
-const nanoid = require('nanoid');
 const RdfStore = require('..').RdfStore;
 const leveldown = require('leveldown');
 const dataFactory = require('n3').DataFactory;
@@ -36,7 +35,7 @@ const remove = util.promisify(fs.remove.bind(fs));
     return;
   }
 
-  const absStorePath = path.join(os.tmpdir(), `node-quadstore-${nanoid()}`);
+  const absStorePath = path.join(os.tmpdir(), `node-quadstore-${utils.nanoid()}`);
   console.log(absStorePath);
 
   const store = new RdfStore(leveldown(absStorePath), { dataFactory });
@@ -59,6 +58,6 @@ const remove = util.promisify(fs.remove.bind(fs));
   console.log(`TIME: ${(afterTime - beforeTime) / 1000} s`);
   console.log(`DISK: ${diskUsage}`);
 
-  // await remove(absStorePath);
+  await remove(absStorePath);
 
 })();

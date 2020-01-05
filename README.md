@@ -20,15 +20,12 @@ Supports quads, RDF/JS interfaces and SPARQL queries.
     - [Graph Interface](#graph-api)
         - [QuadStore class](#quadstore-class)
         - [QuadStore.prototype.get](#quadstoreprototypeget)
-        - [QuadStore.prototype.getByIndex](#quadstoreprototypegetbyindex)
         - [QuadStore.prototype.put](#quadstoreprototypeput)
         - [QuadStore.prototype.del](#quadstoreprototypedel)
         - [QuadStore.prototype.patch](#quadstoreprototypepatch)
         - [QuadStore.prototype.getStream](#quadstoreprototypegetstream)
-        - [QuadStore.prototype.getByIndexStream](#quadstoreprototypegetbyindexstream)
         - [QuadStore.prototype.putStream](#quadstoreprototypeputstream)
         - [QuadStore.prototype.delStream](#quadstoreprototypedelstream)
-        - [QuadStore.prototype.registerIndex](#quadstoreprototyperegisterindex)
     - [RDF Interface](#rdf-interface)
         - [RdfStore class](#rdfstore-class)
         - [Graph API, Quad and Term instances](#graph-api-quad-and-term-instances)
@@ -136,23 +133,6 @@ Similarly, the value `context` would require all quads to be formatted as
 
 Returns an array of all quads within the store matching the specified terms.
 
-#### QuadStore.prototype.getByIndex()
-
-    const name = 'index';
-    const opts = {gte: 'subject1', lte: 'subject42'};
-
-    store.getByIndex(name, opts, (getErr, matchingQuads) => {}); // callback
-    store.getByIndex(name, opts).then((matchingQuads) => {}); // promise
-
-Returns an array of all quads within the store matching the specified 
-conditions as tested against the specified index. Options available are `lt`,
-`lte`, `gt`, `gte`, `limit`, `reverse`.
-
-For standard prefix-matching queries, append the boundary character 
-`store.boundary` to the `lte` value:
-
-    { gte: 's', lte: 's' + store.boundary }
-
 #### QuadStore.prototype.put()
 
     const quads = [
@@ -228,22 +208,6 @@ quads matching such terms from the store.
 *Synchronously* returns a `stream.Readable` of all quads matching the terms in 
 the specified query.
 
-#### QuadStore.prototype.getByIndexStream()
-
-    const name = 'index';
-    const opts = {gte: 'subject1', lte: 'subject42'};
-
-    const readableStream = store.getStream(name, opts);
-
-*Synchronously* returns a `stream.Readable` of all quads within the store 
-matching the specified conditions as tested against the specified index. 
-Options available are `lt`,`lte`, `gt`, `gte`, `limit`, `reverse`.
-
-For standard prefix-matching queries, append the boundary character 
-`store.boundary` to the `lte` value:
-
-    { gte: 's', lte: 's' + store.boundary }
-
 #### QuadStore.prototype.putStream()
 
     store.putStream(readableStream, (err) => {});
@@ -257,14 +221,6 @@ Imports all quads coming through the specified `stream.Readable` into the store.
     store.delStream(readableStream).then(() => {});
 
 Deletes all quads coming through the specified `stream.Readable` from the store.
-
-#### QuadStore.prototype.registerIndex()
-
-    store.registerIndex('updatedAt', function (quad) {
-      return quad.subject.split('').reverse().join('');
-    });
-
-Creates a new index that uses the provided function to compute index keys.
 
 ### RDF Interface
 
@@ -306,16 +262,12 @@ the `get`, `put`, `del`, `patch`, `query`, `getStream`, `putStream` and
 `delStream` methods accept and return (streams of and/or arrays of) `Quad` 
 objects as produced by the `dataFactory.quad` method. 
 
-Matching terms, such as those used in the `query`, `get` and `createReadStream`
-methods, must be `Term` objects as produced by the `dataFactory.namedNode`, 
+Matching terms, such as those used in the `get` and `getStream` methods,
+must be `Term` objects as produced by the `dataFactory.namedNode`, 
 `dataFactory.blankNode` or `dataFactory.literal` methods. 
 
 The same rules apply for the `match`, `import`, `remove` and `removeMatches` 
 methods inherited from the RDF/JS interface.
-
-The conditions used in `getByIndex()`, `getByIndexStream()` and the key 
-generation function used in `registerIndex()` **must** use the serialization 
-format of [Ruben Verborgh's `N3` library](https://www.npmjs.com/package/n3).
 
 #### SPARQL Queries
 
@@ -381,9 +333,11 @@ Persistent, in-browser storage is supported using the
 ## Performance
 
 We've yet to develop proper benchmarks. That said, loading the `21million.rdf`
-file into an instance of `RdfStore` on Node v8.4.0 running on a late 2013 
-MacBook Pro (Intel Core i5 2.4 Ghz, SSD storage) clocks at **~9.5k quads per 
-second** and and **~4.3k quads per MB**. See [loadfile.js](https://github.com/beautifulinteractions/node-quadstore/blob/master/perf/loadfile.js).
+file into an instance of `RdfStore` on Node v12.14.0 running on a 2018 
+MacBook Pro (Intel Core i7 2.6 Ghz, SSD storage) clocks at **~15k quads per 
+second** and **~4k quads per MB**.
+
+    node perf/loadfile.js /Users/jacoscaz/Downloads/1million.rdf 
  
 ## LICENSE
 

@@ -97,6 +97,26 @@ module.exports = () => {
 
     });
 
+    describe('Match by multiple values', () => {
+
+      it('should match quads by subject [VAL, VAL] and object [VAL]', async function () {
+        const quads = await this.store.get({
+          object: ['o2'],
+          subject: ['s', 's2'],
+        });
+        should(quads).have.length(3);
+      });
+
+      it('should match quads by subject [VAL, VAL] and predicate [VAL, VAL]', async function () {
+        const quads = await this.store.get({
+          subject: ['s', 's2'],
+          predicate: ['p', 'p2' ],
+        });
+        should(quads).have.length(5);
+      });
+
+    });
+
     describe('Match by range', () => {
 
       it('should match quads by subject [GTE]', async function () {
@@ -123,6 +143,14 @@ module.exports = () => {
           predicate: { gte: 'p2' },
         });
         should(quads).have.length(2);
+      });
+
+      it('should match quads by subject [GTE] and predicate [VAL, VAL]', async function () {
+        const quads = await this.store.get({
+          subject: { gte: 's' },
+          predicate: ['p', 'p2' ],
+        });
+        should(quads).have.length(5);
       });
 
     });
