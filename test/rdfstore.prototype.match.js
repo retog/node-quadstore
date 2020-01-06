@@ -5,6 +5,7 @@ const _ = require('../lib/utils/lodash');
 const utils = require('../lib/utils');
 const should = require('should');
 const factory = require('@rdfjs/data-model');
+const AsyncIterator = require('asynciterator');
 
 function stripTermSerializedValue(quads) {
   const _quads = _.isArray(quads) ? quads : [quads];
@@ -39,7 +40,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = utils.createArrayStream(quads);
+        const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
         const subject = factory.namedNode('http://ex.com/s2');
         const matchedQuads = await utils.streamToArray(rs.match(subject));
@@ -65,7 +66,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = utils.createArrayStream(quads);
+        const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
         const predicate = factory.namedNode('http://ex.com/p2');
         const matchedQuads = await utils.streamToArray(rs.match(null, predicate));
@@ -91,7 +92,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g2')
           )
         ];
-        const source = utils.createArrayStream(quads);
+        const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
         const object = factory.literal('o2', 'en-gb');
         const matchedQuads = await utils.streamToArray(rs.match(null, null, object));
@@ -117,7 +118,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g2')
           )
         ];
-        const source = utils.createArrayStream(quads);
+        const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
         const graph = factory.namedNode('http://ex.com/g2');
         const matchedQuads = await utils.streamToArray(rs.match(null, null, null, graph));
@@ -143,7 +144,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g1')
           )
         ];
-        const source = utils.createArrayStream(quads);
+        const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
         const matchedQuads = await utils.streamToArray(rs.match(null, null, null, factory.defaultGraph()));
         stripTermSerializedValue(matchedQuads);
@@ -167,7 +168,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g1')
           )
         ];
-        const source = utils.createArrayStream(quads);
+        const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
         const readStream = rs.match(null, null, null, factory.defaultGraph());
         const matchedQuads = await utils.streamToArray(readStream);
@@ -197,7 +198,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = utils.createArrayStream(quads);
+        const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
         // console.log(await store._debugQuads());
         const match = { gt: factory.literal('"6"', 'http://www.w3.org/2001/XMLSchema#integer') };
@@ -223,7 +224,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = utils.createArrayStream(quads);
+        const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
         const match = { gte: factory.literal('"7.0"', 'http://www.w3.org/2001/XMLSchema#double') };
         const matchedQuads = await utils.streamToArray(rs.match(null, null, match, null));
@@ -249,7 +250,7 @@ module.exports = () => {
             factory.namedNode('http://ex.com/g')
           )
         ];
-        const source = utils.createArrayStream(quads);
+        const source = new AsyncIterator.ArrayIterator(quads);
         await utils.waitForEvent(store.import(source), 'end', true);
         const match = {
           gt: factory.literal('"7.0"', 'http://www.w3.org/2001/XMLSchema#double'),

@@ -27,6 +27,7 @@
     "url": "https://github.com/beautifulinteractions/node-quadstore.git"
   },
   "devDependencies": {
+    "@rdfjs/data-model": "^1.1.2",
     "benchmark": "^2.1.4",
     "fs-extra": "^8.1.0",
     "husky": "^3.1.0",
@@ -40,9 +41,7 @@
     "uuid": "^3.3.3"
   },
   "dependencies": {
-    "@rdfjs/data-model": "^1.1.2",
     "asynciterator": "^2.0.1",
-    "debug": "^4.1.1",
     "encoding-down": "^6.3.0",
     "levelup": "^4.3.2",
     "lodash.flatmap": "^4.5.0",
@@ -55,7 +54,7 @@
   ],
   "engineStrict": true,
   "engines": {
-    "node": ">=8.0.0"
+    "node": ">=10.0.0"
   },
   "license": "MIT",
   "homepage": "https://github.com/beautifulinteractions/node-quadstore",

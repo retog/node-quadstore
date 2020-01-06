@@ -1,4 +1,5 @@
 
+
 # QUADSTORE [![Build Status](https://travis-ci.org/beautifulinteractions/node-quadstore.svg?branch=master)](https://travis-ci.org/beautifulinteractions/node-quadstore)
 
 ![Logo](https://github.com/beautifulinteractions/node-quadstore/blob/master/logo.png?raw=true)
@@ -40,26 +41,71 @@ Supports quads, RDF/JS interfaces and SPARQL queries.
 
 ## Introduction
 
-A quad is a triple with an added `graph` term.
+In the context of knowledge representation, a statement can often be 
+represented as a 3-dimensional `(subject, predicate, object)` tuple,
+normally referred to as a `triple`.
+
+```
+subject             predicate           object
+BOB                 KNOWS               ALICE
+BOB                 KNOWN               PAUL
+```
+
+A set of statements / triples can also be thought of as a graph:
+
+```
+                                        ┌────────┐
+              KNOWS (predicate)         │ ALICE  │
+     ┌─────────────────────────────────▶│(object)│
+     │                                  └────────┘
+┌─────────┐                                       
+│   BOB   │                                       
+│(subject)│                                       
+└─────────┘                             ┌────────┐
+     │                                  │  PAUL  │
+     └─────────────────────────────────▶│(object)│
+              KNOWS (predicate)         └────────┘
+```                                                      
+
+A `quad` is a triple with an additional term, usually called `graph` or
+`context`.
 
     (subject, predicate, object, graph)
 
-Such additional term facilitates the representation of metadata, such as 
-provenance, in the form of other quads having the `graph` of the former 
-quads as their subject or object.
+On a semantic level, the `graph` term identifies the graph to which a triple 
+belongs. Each identifier can then be used as the `subject` or `object` of 
+additional triples, facilitating the representation of metadata such as 
+provenance and temporal validity. 
 
-Quadstore heavily borrows from LevelGraph's approach to storing tuples but 
-employs a different indexing strategy that requires the same number of indexes
-to handle the additional dimension and efficiently store and query quads.
+```
+subject             predicate           object          graph
+BOB                 KNOWS               ALICE           GRAPH-1
+BOB                 KNOWS               PAUL            GRAPH-2
+GRAPH-1             SOURCE              FACEBOOK
+GRAPH-2             SOURCE              LINKEDIN
+```
 
-LevelGraph's approach to storing tuples is described in this presentation
-[How to Cook a Graph Database in a Night](http://nodejsconfit.levelgraph.io/)
-by LevelGraph's creator Matteo Collina.
+Quadstore is a LevelDB-backed graph database for Node.js and the browser 
+with native support for quads and the RDF/JS interface specification.
+Additional features, such as SPARQL queries, are made available through 
+separate modules.
 
-Quadstore's indexing strategy has been developed by 
-[Sarra Abbassi](mailto:abbassy.sarra@gmail.com) and 
-[Rim Faiz](mailto:rim.faiz@ihec.rnu.tn) and is described in the paper
-[RDF-4X: a scalable solution for RDF quads store in the cloud](http://dl.acm.org/citation.cfm?id=3012104).
+Quadstore heavily borrows from [LevelGraph's approach to storing tuples][i1],
+maintaining multiple indexes each of which deals with a different permutation
+of quad terms. In that sense, Quadstore is an alternative to [LevelGraph][i3] 
+that strikes a different compromise between expressiveness and performance, 
+opting to natively supporting quads while working towards minimizing 
+[the performance penalty][i4] that comes with the fourth term. 
+
+Whereas previous versions of Quadstore used to maintain a pre-defined set of 
+indexes based on the paper [RDF-4X][i2], newer versions allow users to
+configure custom set of indexes according to the usage and query patterns 
+specific to their use case.
+
+[i1]: http://nodejsconfit.levelgraph.io
+[i2]: http://dl.acm.org/citation.cfm?id=3012104
+[i3]: https://github.com/levelgraph/levelgraph
+[i4]: https://github.com/levelgraph/levelgraph/issues/43#issuecomment-29519727
 
 ## Status
 
@@ -67,7 +113,14 @@ Active, under development.
 
 ### Roadmap
 
-See [ROADMAP.md](./ROADMAP.md).
+We're looking at the following features:
+
+- Adding support for complex queries, see [searches in LevelGraph][r1]
+- Adding support for quad generation, see [generation in LevelGraph][r2]
+- Refactoring support for SPARQL queries around something lighter than Comunica
+
+[r1]: https://github.com/levelgraph/levelgraph#searches
+[r2]: https://github.com/levelgraph/levelgraph#triple-generation
 
 ### Changelog
 
@@ -75,7 +128,7 @@ See [CHANGELOG.md](./CHANGELOG.md).
 
 ### Current version and features
 
-Current version: **v6.0.1** [[See on NPM](https://www.npmjs.com/package/quadstore)].
+Current version: **v7.0.1** [[See on NPM](https://www.npmjs.com/package/quadstore)].
 
 - Supports retrieval, update, insertion and removal of quads
 - Supports both Promise(s) and callbacks
@@ -89,7 +142,7 @@ Current version: **v6.0.1** [[See on NPM](https://www.npmjs.com/package/quadstor
   Pre-releases are tagged accordingly.
 - The `master` branch is kept in sync with NPM and all development work happens
   on the `devel` branch and/or issue-specific branches.
-- Requires Node.js >= 8.0.0.
+- Requires Node.js >= 10.0.0.
 
 ## Usage
 
@@ -110,19 +163,48 @@ We test `quadstore` using the following backends:
 #### QuadStore class
 
     const QuadStore = require('quadstore').QuadStore;
-    const store = new QuadStore(abstractLevelDOWN, opts);
+    const store = new QuadStore(opts);
 
-Instantiates a new store. The `abstractLevelDOWN` argument **must** be an 
-instance of a leveldb backend. Supported properties for the `opts` argument 
+Instantiates a new store. Supported properties for the `opts` argument 
 are:
 
-    opts.contextKey = 'graph';        // Name of fourth term
+    opts.backend = require('memdown')();    // REQUIRED: level instance 
+    opts.contextKey = 'graph';              // OPTIONAL: name of fourth term
+    opts.indexes = [                        // OPTIONAL: custom indexes
+        ['subject', 'predicate', 'object', 'graph'],
+    ];
+    
+The `opts.backend` option **must** be an instance of a leveldb backend.
 
-The `contextKey` option determines which key the store will use to read and
+The `opts.contextKey` option determines which key the store will use to read and
 write the fourth term of each quad. The default value `graph` requires all 
 quads to be formatted as `{ subject, predicate, object, graph }` objects. 
 Similarly, the value `context` would require all quads to be formatted as
 `{ subject, predicate, object, context }` objects.
+
+##### Custom indexes
+
+The `opts.indexes` option allows users to configure which indexes will be used
+by the store. If not set, the store will default to the following indexes:
+
+```
+[
+  ['subject', 'predicate', 'object', contextKey],
+  ['object', contextKey, 'subject', 'predicate'],
+  [contextKey, 'subject', 'predicate', 'object'],
+  ['object', 'subject', 'predicate', contextKey],
+  ['predicate', 'object', contextKey, 'subject'],
+  [contextKey, 'predicate', 'object', 'subject'],
+]; 
+```
+
+This option, if present, **must** be set to an array of terms array, each of 
+which **must** represent one of the 24 possible permutations of the four terms 
+`subject`, `predicate`, `object` and `[context]`. Partial indexes are not 
+supported.
+
+The store will automatically select which index to use for a given query based
+on the available indexes and the matching terms of the query itself.
 
 #### QuadStore.prototype.get()
 
@@ -132,6 +214,16 @@ Similarly, the value `context` would require all quads to be formatted as
     store.get(matchTerms).then((matchingQuads) => {}); // promise
 
 Returns an array of all quads within the store matching the specified terms.
+
+##### Range matching
+
+Quadstore also supports range-based matching in addition to value-based 
+matching. Ranges can be defined using the `gt`, `gte`, `lt`, `lte` properties: 
+
+    const matchTerms = {graph: { gt: 'g' } };
+
+    store.get(matchTerms, (getErr, matchingQuads) => {}); // callback
+    store.get(matchTerms).then((matchingQuads) => {}); // promise
 
 #### QuadStore.prototype.put()
 
@@ -237,16 +329,16 @@ Additionally, the `RdfStore` class also supports `SPARQL` queries and provides
 #### RdfStore class
 
     const RdfStore = require('quadstore').RdfStore;
-    const store = new RdfStore(abstractLevelDOWN, opts);
+    const store = new RdfStore(opts);
 
 Instantiates a new store. The `RdfStore` class extends `QuadStore` and requires
-an instance of a leveldb backend as the `abstractLevelDOWN` argument. In 
+an instance of a leveldb backend as the `opts.backend` argument. In 
 addition to all options supported by `QuadStore`, `RdfStore` supports the 
 following:
 
-    opts.dataFactory = require('@rdf-data-model'); // RDFJS dataFactory implementation
+    opts.dataFactory = require('@rdf-data-model');  // REQUIRED: instance of RDF/JS' dataFactory 
 
-The `dataFactory` option, if specified, *must* be an implementation of the
+The `dataFactory` option *must* be an implementation of the
 `dataFactory` interface defined in the RDF/JS specification, such as: 
 
 - [@rdfjs/data-model](https://www.npmjs.com/package/@rdfjs/data-model)

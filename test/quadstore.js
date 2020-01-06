@@ -10,7 +10,10 @@ module.exports = () => {
   describe('QuadStore', () => {
 
     beforeEach(async function () {
-      this.store = new QuadStore(this.db, { indexes: this.indexes });
+      this.store = new QuadStore({
+        backend: this.db,
+        indexes: this.indexes,
+      });
       await utils.waitForEvent(this.store, 'ready');
     });
 
