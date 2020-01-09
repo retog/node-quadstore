@@ -100,7 +100,7 @@ opting to natively supporting quads while working towards minimizing
 Whereas previous versions of Quadstore used to maintain a pre-defined set of 
 indexes based on the paper [RDF-4X][i2], newer versions allow users to
 configure custom set of indexes according to the usage and query patterns 
-specific to their use case.
+specific to each use case.
 
 [i1]: http://nodejsconfit.levelgraph.io
 [i2]: http://dl.acm.org/citation.cfm?id=3012104
@@ -203,8 +203,8 @@ which **must** represent one of the 24 possible permutations of the four terms
 `subject`, `predicate`, `object` and `[context]`. Partial indexes are not 
 supported.
 
-The store will automatically select which index to use for a given query based
-on the available indexes and the matching terms of the query itself.
+The store will automatically select which index(es) to use for a given query 
+based on the available indexes and the query itself.
 
 #### QuadStore.prototype.get()
 
@@ -217,13 +217,32 @@ Returns an array of all quads within the store matching the specified terms.
 
 ##### Range matching
 
-Quadstore also supports range-based matching in addition to value-based 
-matching. Ranges can be defined using the `gt`, `gte`, `lt`, `lte` properties: 
+Quadstore supports range-based matching in addition to value-based matching. 
+Ranges can be defined using the `gt`, `gte`, `lt`, `lte` properties: 
 
     const matchTerms = {graph: { gt: 'g' } };
 
     store.get(matchTerms, (getErr, matchingQuads) => {}); // callback
     store.get(matchTerms).then((matchingQuads) => {}); // promise
+    
+##### Multiple matching criteria
+    
+Each matching term can also be set to an array of values and ranges, in which
+case Quadstore will first decompose the query into one sub-query per each 
+combination of criteria - one criteria per term - and then concatenate the 
+results of each subquery. 
+
+    const matchTerms = {
+        graph: { gt: 'g' }
+        subject: [ 's', { gt: 's3' } ], 
+    };
+
+    store.get(matchTerms, (getErr, matchingQuads) => {}); // callback
+    store.get(matchTerms).then((matchingQuads) => {}); // promise
+
+This method supports [range matching](#range-matching) and 
+[multiple matching criteria](#multiple-matching-criteria). 
+See [QuadStore.prototype.get()](#quadstoreprototypeget).
 
 #### QuadStore.prototype.put()
 
@@ -258,6 +277,10 @@ quads matching such terms from the store.
 
     store.del(matchTerms, (delErr) => {}); // callback
     store.del(matchTerms).then(() => {}); // promise
+    
+In the latter case, this method supports [range matching](#range-matching) and 
+[multiple matching criteria](#multiple-matching-criteria). 
+See [QuadStore.prototype.get()](#quadstoreprototypeget).
 
 #### QuadStore.prototype.patch()
 
@@ -291,6 +314,10 @@ quads matching such terms from the store.
     store.patch(matchTerms, newQuads, (delputErr) => {}); // callback
     store.patch(matchTerms, newQuads).then(() => {}); // promise
 
+In the latter case, this method supports [range matching](#range-matching) and 
+[multiple matching criteria](#multiple-matching-criteria). 
+See [QuadStore.prototype.get()](#quadstoreprototypeget).
+
 #### QuadStore.prototype.getStream()
 
     const matchTerms = {graph: 'c'};
@@ -299,6 +326,10 @@ quads matching such terms from the store.
 
 *Synchronously* returns a `stream.Readable` of all quads matching the terms in 
 the specified query.
+
+This method supports [range matching](#range-matching) and 
+[multiple matching criteria](#multiple-matching-criteria). 
+See [QuadStore.prototype.get()](#quadstoreprototypeget).
 
 #### QuadStore.prototype.putStream()
 
@@ -366,6 +397,27 @@ methods inherited from the RDF/JS interface.
 SPARQL queries are supported via the additional package 
 [`quadstore-sparql`](https://github.com/beautifulinteractions/node-quadstore).
 
+#### RDF range matching
+
+Support for [range-based matching](#range-matching) is present in RdfStore, too,
+with ranges defined using `Term` instances as produced by `dataFactory.namedNode`, 
+`dataFactory.literal` and `dataFactory.blankNode`.
+
+Furthermore, values for literal terms with the following numeric datatypes are
+expressed and matched according to their numerical values rather than their 
+string representations:
+
+```
+http://www.w3.org/2001/XMLSchema#integer
+http://www.w3.org/2001/XMLSchema#double
+```
+
+This is also the case for terms with the following date/time datatypes:
+
+```
+http://www.w3.org/2001/XMLSchema#dateTime
+```
+
 #### RdfStore.prototype.match()
 
     const subject = dataFactory.namedNode('http://example.com/subject');
@@ -379,6 +431,9 @@ SPARQL queries are supported via the additional package
       .on('end', () => {});
 
 Returns a `stream.Readable` of RDF/JS `Quad` instances matching the provided terms.
+Supports [range-based matching](#rdf-range-matching).
+   
+See [QuadStore.prototype.get()](#quadstoreprototypeget).
 
 #### RdfStore.prototype.import()
 
@@ -410,6 +465,7 @@ Consumes the stream removing each incoming quad.
       .on('end', () => {});
 
 Removes all quad  matching the provided terms.
+Supports [range-based matching](#rdf-range-matching).
 
 ### Browser
 
