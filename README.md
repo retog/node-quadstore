@@ -48,7 +48,7 @@ normally referred to as a `triple`.
 ```
 subject             predicate           object
 BOB                 KNOWS               ALICE
-BOB                 KNOWN               PAUL
+BOB                 KNOWS               PAUL
 ```
 
 A set of statements / triples can also be thought of as a graph:
@@ -399,7 +399,7 @@ SPARQL queries are supported via the additional package
 
 #### RDF range matching
 
-Support for [range-based matching](#range-matching) is present in RdfStore, too,
+The RdfStore class inherits support  for [range-based matching](#range-matching), 
 with ranges defined using `Term` instances as produced by `dataFactory.namedNode`, 
 `dataFactory.literal` and `dataFactory.blankNode`.
 
